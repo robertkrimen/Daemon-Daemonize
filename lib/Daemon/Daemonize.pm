@@ -153,6 +153,7 @@ sub read_pidfile {
     my $pidfile = _pidfile shift;
 
     return unless -s $pidfile;
+    return unless -f $pidfile && -r $pidfile;
     return scalar $pidfile->slurp( chomp => 1 );
 }
 

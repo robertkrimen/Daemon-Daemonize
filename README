@@ -7,7 +7,7 @@ VERSION
 SYNOPSIS
         use Daemon::Daemonize
 
-        Daemon::Daemonize->launch_daemon( %options, sub {
+        Daemon::Daemonize->daemonize( %options, run => sub {
 
             # Daemon code in here...
 
@@ -15,10 +15,19 @@ SYNOPSIS
 
         # Do some non-daemon stuff here...
 
+    You can also use it in the traditional way, daemonizing your current
+    program
+
+        Daemon::Daemonize->daemonize( %options )
+
+        # Daemon code in here...
+
 SEE ALSO
     MooseX::Daemonize
 
     Proc::Daemon
+
+    Net::Server::Daemonize
 
 AUTHOR
     Robert Krimen, "<rkrimen at cpan.org>"

@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+
+use strict; 
+use warnings; 
+
+use Daemon::Daemonize;
+use Path::Class;
+
+my $dir = dir->absolute;
+my $stderr = $dir->file( 'stderr' );
+my $stdout = $dir->file( 'stdout' );
+
+Daemon::Daemonize->daemonize( no_chdir => 0, stdout_file => $stdout, stderr_file => $stderr );
+
+print "Stdout!\n";
+warn "Stderr!\n";

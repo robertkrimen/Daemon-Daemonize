@@ -15,12 +15,76 @@ SYNOPSIS
 
         # Do some non-daemon stuff here...
 
-    You can also use it in the traditional way, daemonizing your current
-    program
+    You can also use it in the traditional way, daemonizing the current
+    process:
 
         Daemon::Daemonize->daemonize( %options )
 
         # Daemon code in here...
+
+    ...and use it to check up on your daemon:
+
+        # In your daemon
+        Daemon::Daemonize->write_pidfile( $pidfile )
+        $SIG{INT} = sub { Daemon::Daemonize->delete_pidfile( $pidfile ) }
+
+        ... Elsewhere ...
+
+        # Return the pid from $pidfile if it contains a pid AND
+        # the process is running (even if you don't own it), 0 otherwise
+        my $pid = Daemon::Daemonize->check_pidfile( $pidfile )
+
+        # Return the pid from $pidfile, or undef if the
+        # file doesn't exist, is unreadable, etc.
+        # This will return the pid regardless of if the process is running
+        my $pid = Daemon::Daemonize->read_pidfile( $pidfile )
+
+DESCRIPTION
+    Daemon::Daemonize is a toolbox for both daemonizing processes & checking
+    up on those processes. It takes inspiration from
+    <http://www.clapper.org/software/daemonize/>, MooseX::Daemon,
+    Net::Server::Daemon, and more...
+
+    Being new, the API is currently fluid, but shouldn't change too much
+
+METHODS
+  Daemon::Daemonize->daemonize( %options )
+    Daemonize via the current process, according to %options:
+
+        no_chdir            Don't change directory to '/' (good for avoiding unmount difficulty)
+                            Default false
+
+        no_close            Don't close STDIN, STDOUT, STDERR (usually redirected from/to /dev/null)
+                            Default false
+
+        chdir <dir>         If given, will change directory to <dir>. This will override no_chdir
+
+        stdout <file>       Open up STDOUT of the process to <file>. This will override no_close
+
+        stderr <file>       Open up STDERR of the process to <file>. This will override no_close
+
+        run <code>          After daemonizing, run the given code and then exit successfully
+
+  Daemon::Daemonize->read_pidfile( $pidfile )
+    Return the pid from $pidfile. Return undef if the file doesn't exist, is
+    unreadable, etc. This will return the pid regardless of if the process
+    is running
+
+    For an alternative, see "check_pidfile"
+
+  Daemon::Daemonize->write_pidfile( $pidfile, [ $pid ] )
+    Write the given pid to $pidfile, creating/overwriting any existing file.
+    The second argument is optional, and will default to $$ (the current
+    process number)
+
+  Daemon::Daemonize->delete_pidfile( $pidfile )
+    Unconditionally delete (unlink) $pidfile
+
+  Daemon::Daemonize->check_pidfile( $pidfile )
+    Return the pid from $pidfile if it contains a pid AND the process is
+    running (even if you don't own it), and 0 otherwise
+
+    This method will always return a number
 
 SEE ALSO
     MooseX::Daemonize

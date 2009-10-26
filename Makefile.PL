@@ -26,6 +26,10 @@ Test::Most
 _END_
 
     map { my ($pk, $vr) = split m/\s/; requires $pk => $vr || 0 } grep { ! /^\s*#/ } split m/\n/, <<_END_;
+Path::Class
+POSIX
+IO::Socket::INET
+Carp
 _END_
 }
 

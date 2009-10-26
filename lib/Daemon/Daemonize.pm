@@ -78,7 +78,7 @@ sub _close_all {
     my $openmax = POSIX::sysconf( &POSIX::_SC_OPEN_MAX );
     $openmax = 64 if ! defined( $openmax ) || $openmax < 0;
 
-    POSIX::close($_) foreach (0 .. $openmax - 1);
+    POSIX::close( $_ ) foreach (3 .. $openmax - 1);
 }
 
 =head2 Daemon::Daemonize->daemonize( %options )

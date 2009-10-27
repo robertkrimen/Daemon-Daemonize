@@ -52,9 +52,14 @@ You can also use it in the traditional way, daemonizing the current process:
     
 =head1 DESCRIPTION
 
-Daemon::Daemonize is a toolbox for both daemonizing processes & checking up on those processes. It takes inspiration from L<http://www.clapper.org/software/daemonize/>, L<MooseX::Daemon>, L<Net::Server::Daemon>, and more...
+Daemon::Daemonize is a toolbox for daemonizing processes and checking up on them. It takes inspiration from L<http://www.clapper.org/software/daemonize/>, L<MooseX::Daemon>, L<Net::Server::Daemon>, and more...
 
 Being new, the API is currently fluid, but shouldn't change too much
+
+=head2 A note about C<< close => std >>
+
+If you're having trouble with IPC in a daemon, try closing only STD* instead of everything. This is a workaround 
+for a problem with using C<Net::Server> and C<IPC::Open3> in a daemonized process
 
 =head1 METHODS
 
@@ -72,32 +77,42 @@ sub _fork_or_die {
     return $pid;
 }
 
-sub _close_all {
+sub superclose {
     my $self = shift;
+    my $from = shift || 0;
 
     my $openmax = POSIX::sysconf( &POSIX::_SC_OPEN_MAX );
     $openmax = 64 if ! defined( $openmax ) || $openmax < 0;
 
-    POSIX::close( $_ ) foreach (3 .. $openmax - 1);
+    return unless $from < $openmax;
+
+    POSIX::close( $_ ) foreach ($from .. $openmax - 1);
 }
 
 =head2 Daemon::Daemonize->daemonize( %options )
 
 Daemonize via the current process, according to C<%options>:
 
-    no_chdir            Don't change directory to '/' (good for avoiding unmount difficulty)
-                        Default false
+    chdir <dir>         Change to <dir> when daemonizing. Pass undef for *no* chdir.
+                        Default is '/' (for avoiding umount difficulty)
 
-    no_close            Don't close STDIN, STDOUT, STDERR (usually redirected from/to /dev/null)
-                        Default false
+    close <option>      Automatically close opened files when daemonizing:
 
-    chdir <dir>         If given, will change directory to <dir>. This will override no_chdir
+                            1     Close STDIN, STDOUT, STDERR (usually
+                                  redirected from/to /dev/null). In addition, close
+                                  any other opened files (up to POSIX::_SC_OPEN_MAX)
+
+                            0     No closing
+
+                            std   Only close STD{IN,OUT,ERR} (as in 1)
+
+                        Default is 1
 
     stdout <file>       Open up STDOUT of the process to <file>. This will override no_close
 
     stderr <file>       Open up STDERR of the process to <file>. This will override no_close
 
-    run <code>          After daemonizing, run the given code and then exit successfully
+    run <code>          After daemonizing, run the given code and then exit
 
 =cut
 
@@ -121,8 +136,8 @@ sub daemonize {
         }
     }
 
-    $options{no_chdir} = delete $options{nochdir} if ! exists $options{no_chdir} && exists $options{nochdir};
-    $options{no_close} = delete $options{noclose} if ! exists $options{no_close} && exists $options{noclose};
+    my $chdir = exists $options{chdir} ? $options{chdir} : '/';
+    my $close = defined $options{close} ? $options{close} : 1;
 
     # Fork once to go into the background
     {
@@ -142,23 +157,19 @@ sub daemonize {
     # Clear the file creation mask
     umask 0;
 
-    if ( my $chdir = $options{chdir} ) {
+    if ( defined $chdir ) {
         chdir $chdir or confess "Unable to chdir to \"$chdir\": $!";
     }
-    # Change to the root so we don't intefere with unmount
-    elsif ( ! $options{no_chdir} ) {
-        chdir '/';
-    }
 
-    unless ( $options{keep_open} || $options{no_close_all} ) {
+    if ( $close eq 1 || $close eq '!std' ) {
         # Close any open file descriptors
-        $self->_close_all;
+        $self->superclose( $close eq '!std' ? 3 : 0 );
     }
 
     my $stdout_file = $ENV{DAEMON_DAEMONIZE_STDOUT} || $options{stdout};
     my $stderr_file = $ENV{DAEMON_DAEMONIZE_STDERR} || $options{stderr};
 
-    unless( $options{keep_open} || $options{no_close} ) {
+    if ( $close eq 1 || $close eq 'std' ) {
         # Re-open  STDIN, STDOUT, STDERR to /dev/null
         open( STDIN,  "+>/dev/null" ) or confess "Could not redirect STDIN to /dev/null";
 

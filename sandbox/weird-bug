@@ -1,0 +1,28 @@
+#!/usr/bin/env perl
+
+use strict; 
+use warnings; 
+
+use Daemon::Daemonize;
+use Path::Class;
+use IPC::Open3 qw/ open3 /;
+
+my $dir = dir->absolute;
+my $stderr = $dir->file( 'stderr' );
+my $stdout = $dir->file( 'stdout' );
+
+Daemon::Daemonize->daemonize( no_chdir => 0, stdout => $stdout, stderr => $stderr );
+
+my $cmd;
+$cmd = '/bin/ls';
+$cmd = "$ENV{HOME}/opt/flex/bin/fcsh";
+my ($reader, $writer);
+
+print STDOUT "Stdout!\n";
+print STDERR "Stderr!\n";
+
+open3 $writer, $reader, undef, $cmd or die $!;
+
+die $! unless sysread $reader, my $read, 10_000;
+
+warn $read;

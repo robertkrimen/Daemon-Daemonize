@@ -54,5 +54,8 @@ ok( ! -e $shb1_file );
 is( Daemon::Daemonize->read_pidfile( $shb1_file ), undef );
 
 kill INT => $pid;
+
+sleep 1;
+
 ok( -e $shb_file );
 is( Daemon::Daemonize->check_pidfile( $shb_file ), 0 );

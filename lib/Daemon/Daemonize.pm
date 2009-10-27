@@ -9,17 +9,17 @@ Daemon::Daemonize - A daemonizer
 
 =head1 VERSION
 
-Version 0.001
+Version 0.002
 
 =cut
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 =head1 SYNOPSIS
 
-    use Daemon::Daemonize
+    use Daemon::Daemonize qw/ :all /
 
-    Daemon::Daemonize->daemonize( %options, run => sub {
+    daemonize( %options, run => sub {
 
         # Daemon code in here...
 
@@ -29,26 +29,31 @@ our $VERSION = '0.001';
 
 You can also use it in the traditional way, daemonizing the current process:
 
-    Daemon::Daemonize->daemonize( %options )
+    daemonize( %options )
 
     # Daemon code in here...
 
-...and use it to check up on your daemon:
+and use it to check up on your daemon:
 
     # In your daemon
-    Daemon::Daemonize->write_pidfile( $pidfile )
-    $SIG{INT} = sub { Daemon::Daemonize->delete_pidfile( $pidfile ) }
+
+    use Daemon::Daemonize qw/ :all /
+
+    write_pidfile( $pidfile )
+    $SIG{INT} = sub { delete_pidfile( $pidfile ) }
 
     ... Elsewhere ...
 
+    use Daemon::Daemonize qw/ :all /
+
     # Return the pid from $pidfile if it contains a pid AND
     # the process is running (even if you don't own it), 0 otherwise
-    my $pid = Daemon::Daemonize->check_pidfile( $pidfile )
+    my $pid = check_pidfile( $pidfile )
 
     # Return the pid from $pidfile, or undef if the
     # file doesn't exist, is unreadable, etc.
     # This will return the pid regardless of if the process is running
-    my $pid = Daemon::Daemonize->read_pidfile( $pidfile )
+    my $pid = read_pidfile( $pidfile )
     
 =head1 DESCRIPTION
 
@@ -61,10 +66,29 @@ Being new, the API is currently fluid, but shouldn't change too much
 If you're having trouble with IPC in a daemon, try closing only STD* instead of everything. This is a workaround 
 for a problem with using C<Net::Server> and C<IPC::Open3> in a daemonized process
 
-=head1 METHODS
+=head1 USAGE
+
+You can use the following in two ways, either importing them:
+
+    use Daemon::Daemonize qw/ daemonize /
+
+    daemonize( ... )
+
+or calling them as a class method:
+
+    use Daemon::Daemonize
+
+    Daemon::Daemonize->daemonize
 
 =cut
 
+use Sub::Exporter::Util qw/ curry_method /;
+use Sub::Exporter -setup => { exports => [ map { $_ => curry_method } qw/
+    daemonize
+    superclose 
+    write_pidfile read_pidfile check_pidfile delete_pidfile
+    does_process_exist can_signal_process check_port
+/ ] };
 use POSIX;
 use Carp;
 use Path::Class;
@@ -89,7 +113,7 @@ sub superclose {
     POSIX::close( $_ ) foreach ($from .. $openmax - 1);
 }
 
-=head2 Daemon::Daemonize->daemonize( %options )
+=head2 daemonize( %options )
 
 Daemonize via the current process, according to C<%options>:
 
@@ -203,7 +227,7 @@ sub _pidfile($) {
     return Path::Class::File->new( ref $pidfile eq 'ARRAY' ? @$pidfile : "$pidfile" );
 }
 
-=head2 Daemon::Daemonize->read_pidfile( $pidfile )
+=head2 read_pidfile( $pidfile )
 
 Return the pid from $pidfile. Return undef if the file doesn't exist, is unreadable, etc.
 This will return the pid regardless of if the process is running
@@ -221,7 +245,7 @@ sub read_pidfile {
     return scalar $pidfile->slurp( chomp => 1 );
 }
 
-=head2 Daemon::Daemonize->write_pidfile( $pidfile, [ $pid ] )
+=head2 write_pidfile( $pidfile, [ $pid ] )
 
 Write the given pid to $pidfile, creating/overwriting any existing file. The second
 argument is optional, and will default to $$ (the current process number)
@@ -238,7 +262,7 @@ sub write_pidfile {
     $fh->close;
 }
 
-=head2 Daemon::Daemonize->delete_pidfile( $pidfile )
+=head2 delete_pidfile( $pidfile )
 
 Unconditionally delete (unlink) $pidfile
 
@@ -251,7 +275,7 @@ sub delete_pidfile {
     $pidfile->remove;
 }
 
-=head2 Daemon::Daemonize->check_pidfile( $pidfile )
+=head2 check_pidfile( $pidfile )
 
 Return the pid from $pidfile if it contains a pid AND the process is running (even if you don't own it), and 0 otherwise
 

@@ -5,15 +5,15 @@ use strict;
 
 =head1 NAME
 
-Daemon::Daemonize - A daemonizer
+Daemon::Daemonize - An easy-to-use daemon(izing) toolkit
 
 =head1 VERSION
 
-Version 0.002
+Version 0.003
 
 =cut
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 =head1 SYNOPSIS
 
@@ -57,18 +57,19 @@ and use it to check up on your daemon:
     
 =head1 DESCRIPTION
 
-Daemon::Daemonize is a toolbox for daemonizing processes and checking up on them. It takes inspiration from L<http://www.clapper.org/software/daemonize/>, L<MooseX::Daemon>, L<Net::Server::Daemon>, and more...
+Daemon::Daemonize is a toolkit for daemonizing processes and checking up on them. It takes inspiration from L<http://www.clapper.org/software/daemonize/>, L<MooseX::Daemon>, L<Net::Server::Daemon>
 
-Being new, the API is currently fluid, but shouldn't change too much
+=head2 A note about the C<close> option
 
-=head2 A note about C<< close => std >>
+If you're having trouble with IPC in a daemon, try closing only STD* instead of everything:
 
-If you're having trouble with IPC in a daemon, try closing only STD* instead of everything. This is a workaround 
-for a problem with using C<Net::Server> and C<IPC::Open3> in a daemonized process
+    daemonize( ..., close => std, ... )
+    
+This is a workaround for a problem with using C<Net::Server> and C<IPC::Open3> in a daemonized process
 
 =head1 USAGE
 
-You can use the following in two ways, either importing them:
+You can use the following functions in two ways, by either importing them:
 
     use Daemon::Daemonize qw/ daemonize /
 
@@ -115,26 +116,28 @@ sub superclose {
 
 =head2 daemonize( %options )
 
-Daemonize via the current process, according to C<%options>:
+Daemonize the current process, according to C<%options>:
 
     chdir <dir>         Change to <dir> when daemonizing. Pass undef for *no* chdir.
-                        Default is '/' (for avoiding umount difficulty)
+                        Default is '/' (to prevent a umount conflict)
 
     close <option>      Automatically close opened files when daemonizing:
 
-                            1     Close STDIN, STDOUT, STDERR (usually
-                                  redirected from/to /dev/null). In addition, close
-                                  any other opened files (up to POSIX::_SC_OPEN_MAX)
+                            1     Close STDIN, STDOUT, STDERR (usually redirected
+                                  from/to /dev/null). In addition, close any other
+                                  opened files (up to POSIX::_SC_OPEN_MAX)
 
-                            0     No closing
+                            0     Don't close anything
 
                             std   Only close STD{IN,OUT,ERR} (as in 1)
 
-                        Default is 1
+                        Default is 1 (close everything)
 
-    stdout <file>       Open up STDOUT of the process to <file>. This will override no_close
+    stdout <file>       Open up STDOUT of the process to <file>. This will override any
+                        closing of STDOUT
 
-    stderr <file>       Open up STDERR of the process to <file>. This will override no_close
+    stderr <file>       Open up STDERR of the process to <file>. This will override any
+                        closing of STDERR
 
     run <code>          After daemonizing, run the given code and then exit
 
@@ -245,6 +248,24 @@ sub read_pidfile {
     return scalar $pidfile->slurp( chomp => 1 );
 }
 
+=head2 check_pidfile( $pidfile )
+
+Return the pid from $pidfile if it contains a pid AND the process is running (even if you don't own it), and 0 otherwise
+
+This method will always return a number
+
+=cut
+
+sub check_pidfile {
+    my $self = shift;
+    my $pidfile = _pidfile shift;
+
+    my $pid = $self->read_pidfile( $pidfile );
+    return 0 unless $pid;
+    return 0 unless $self->does_process_exist( $pid );
+    return $pid;
+}
+
 =head2 write_pidfile( $pidfile, [ $pid ] )
 
 Write the given pid to $pidfile, creating/overwriting any existing file. The second
@@ -275,27 +296,21 @@ sub delete_pidfile {
     $pidfile->remove;
 }
 
-=head2 check_pidfile( $pidfile )
+=head2 does_process_exist( $pid )
 
-Return the pid from $pidfile if it contains a pid AND the process is running (even if you don't own it), and 0 otherwise
+Using C<kill>, attempts to determine if $pid exists (is running).
 
-This method will always return a number
+If you don't own $pid, this method will still return true (by examining C<errno> for EPERM).
+
+For an alternative, see C<can_signal_process>
 
 =cut
-
-sub check_pidfile {
-    my $self = shift;
-    my $pidfile = _pidfile shift;
-
-    my $pid = $self->read_pidfile( $pidfile );
-    return 0 unless $pid;
-    return 0 unless $self->does_process_exist( $pid );
-    return $pid;
-}
 
 sub does_process_exist {
     my $self = shift;
     my $pid = shift;
+
+    croak "No pid given to check" unless $pid; 
 
     return 1 if kill 0, $pid;
     my $errno = $!;
@@ -308,18 +323,34 @@ sub does_process_exist {
     return 0;
 }
 
+=head2 can_signal_process( $pid )
+
+Using C<kill>, attempts to determine if $pid exists (is running) and is owned (signable) by the user.
+
+=cut
+
 sub can_signal_process {
     my $self = shift;
     my $pid = shift;
+
+    croak "No pid given to check" unless $pid; 
 
     return kill 0, $pid ? 1 : 0;
     # So $! is ESRCH or EPERM or something else, so we can't signal/control it
 }
 
+=head2 check_port( $port )
+
+Returns true if $port on the localhost is accepting connections. 
+
+=cut
+
 sub check_port {
     require IO::Socket::INET;
     my $self = shift;
     my $port = shift;
+
+    croak "No port given to check" unless $port; 
 
     my $socket = IO::Socket::INET->new( PeerAddr => 'localhost', PeerPort => $port, Proto => 'tcp' );
     if ( $socket ) {

@@ -45,7 +45,6 @@ Daemon::Daemonize->write_pidfile( $shb1_file, $$ + 1 );
 is( Daemon::Daemonize->read_pidfile( $shb1_file ), $$ + 1 );
 
 is( Daemon::Daemonize->check_pidfile( $shb_file ), $pid );
-is( Daemon::Daemonize->check_pidfile( $shb1_file ), $$ + 1 );
 is( Daemon::Daemonize->check_pidfile( '/root' ), 0 );
 is( Daemon::Daemonize->check_pidfile( '/.__non-existent-file__' ), 0 );
 

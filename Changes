@@ -1,3 +1,7 @@
+0.004 Thursday November 19 13:49:32 PST 2009:
+    - Added fix for rt51198 (thanks m-uchino)
+    - Removed erroneous test 
+
 0.003 Monday October 26 23:36:36 PDT 2009:
     - Improved documentation
 

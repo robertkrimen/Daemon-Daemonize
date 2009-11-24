@@ -1,3 +1,6 @@
+0.005 Monday November 23 23:37:19 PST 2009:
+    - Added restriction to !MSWin* (for POSIX usage)
+
 0.004 Thursday November 19 13:49:32 PST 2009:
     - Added fix for rt51198 (thanks m-uchino)
     - Removed erroneous test 

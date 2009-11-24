@@ -1,5 +1,7 @@
 use inc::Module::Install;
 
+die 'MSWin is unsupported' if $^O =~ /MSWin/i;
+
 name     'Daemon-Daemonize';
 all_from 'lib/Daemon/Daemonize.pm';
 author   q{Robert Krimen <rkrimen@cpan.org>};

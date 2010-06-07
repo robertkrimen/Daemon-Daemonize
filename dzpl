@@ -1,0 +1,22 @@
+#!/usr/bin/env perl
+use Dzpl
+    name => 'Daemon-Daemonize',
+    version => '0.0051',
+    author => 'Robert Krimen <robertkrimen@gmail.com>',
+    license => 'Perl5',
+    copyright => 'Robert Krimen',
+
+    require => q/
+        Sub::Exporter
+        Path::Class
+        POSIX
+        IO::Socket::INET
+        Carp
+
+        [Test]
+        Test::Most
+    /,
+;
+
+{ plugin '@ROKR' }
+

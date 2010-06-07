@@ -1,19 +1,8 @@
 package Daemon::Daemonize;
+# ABSTRACT: An easy-to-use daemon(izing) toolkit
 
 use warnings;
 use strict;
-
-=head1 NAME
-
-Daemon::Daemonize - An easy-to-use daemon(izing) toolkit
-
-=head1 VERSION
-
-Version 0.005
-
-=cut
-
-our $VERSION = '0.005';
 
 =head1 SYNOPSIS
 
@@ -369,63 +358,6 @@ L<Proc::Daemon>
 
 L<Net::Server::Daemonize>
 
-=head1 AUTHOR
-
-Robert Krimen, C<< <rkrimen at cpan.org> >>
-
-=head1 BUGS
-
-Please report any bugs or feature requests to C<bug-daemon-daemonize at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Daemon-Daemonize>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
-
-
-
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc Daemon::Daemonize
-
-
-You can also look for information at:
-
-=over 4
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Daemon-Daemonize>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Daemon-Daemonize>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Daemon-Daemonize>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Daemon-Daemonize/>
-
-=back
-
-
-=head1 ACKNOWLEDGEMENTS
-
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2009 Robert Krimen.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See http://dev.perl.org/licenses/ for more information.
-
-
 =cut
 
-1; # End of Daemon::Daemonize
+1;

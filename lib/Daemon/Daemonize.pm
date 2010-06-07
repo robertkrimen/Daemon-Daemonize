@@ -198,9 +198,9 @@ sub daemonize {
         }
 
         # Avoid 'stdin reopened for output' warning (taken from MooseX::Daemonize)
-        local *NULL;
-        open( NULL, '/dev/null' );
-        <NULL> if 0;
+        local *_NIL;
+        open( _NIL, '/dev/null' );
+        <_NIL> if 0;
     }
 
     if ( $stdout_file ) {

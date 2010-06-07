@@ -204,11 +204,11 @@ sub daemonize {
     }
 
     if ( $stdout_file ) {
-        open STDOUT, ">", $stdout_file or confess "Could not redirect STDOUT to $stdout_file : $!";
+        open STDOUT, ">>", $stdout_file or confess "Could not redirect STDOUT to $stdout_file : $!";
     }
 
     if ( $stderr_file ) {
-        open STDERR, ">", $stderr_file or confess "Could not redirect STDERR to $stderr_file : $!";
+        open STDERR, ">>", $stderr_file or confess "Could not redirect STDERR to $stderr_file : $!";
     }
 
     return 1;

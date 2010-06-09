@@ -1,3 +1,6 @@
+0.0052 Wednesday June 09 13:31:02 PDT 2010:
+    - Added pgrep check to t/9-basic.t
+
 0.0051 Sunday June 06 22:56:13 PDT 2010:
     - Attempt to fix issue rt52148
     - Conversion to dzpl

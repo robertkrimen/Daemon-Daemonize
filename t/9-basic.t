@@ -5,6 +5,9 @@ use warnings;
 
 use Test::Most;
 
+plan skip_all => 'No pgrep available' unless
+    eval { system( 'pgrep >/dev/null 2>&1' ) and die; 1 };
+
 plan qw/no_plan/;
 
 use Daemon::Daemonize;

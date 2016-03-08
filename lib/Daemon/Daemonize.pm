@@ -1,4 +1,8 @@
 package Daemon::Daemonize;
+BEGIN {
+  $Daemon::Daemonize::VERSION = '0.0052_01'; # patched at https://github.com/haukex/Daemon-Daemonize
+  $Daemon::Daemonize::VERSION = eval $Daemon::Daemonize::VERSION; # recommended by perlmodstyle
+}
 # ABSTRACT: An easy-to-use daemon(izing) toolkit
 
 use warnings;
@@ -130,6 +134,10 @@ Daemonize the current process, according to C<%options>:
 
     run <code>          After daemonizing, run the given code and then exit
 
+    umask <umask>       Set the umask to this value (the default is 0, meaning files
+                        will typically have 666 permissions). Note this value should
+                        not be a string; use e.g. oct($string) to convert a string.
+
 =cut
 
 sub daemonize {
@@ -170,8 +178,8 @@ sub daemonize {
     # Fork again to ensure that daemon never reacquires a control terminal
     $self->_fork_or_die && exit 0;
 
-    # Clear the file creation mask
-    umask 0;
+    # Set the file creation mask
+    umask( defined $options{umask} ? $options{umask} : 0 );
 
     if ( defined $chdir ) {
         chdir $chdir or confess "Unable to chdir to \"$chdir\": $!";

@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use Dzpl
     name => 'Daemon-Daemonize',
-    version => '0.0052',
+    version => '0.0052_01',
     author => 'Robert Krimen <robertkrimen@gmail.com>',
     license => 'Perl5',
     copyright => 'Robert Krimen',

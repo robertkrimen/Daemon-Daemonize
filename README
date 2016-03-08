@@ -2,7 +2,7 @@ NAME
     Daemon::Daemonize - An easy-to-use daemon(izing) toolkit
 
 VERSION
-    version 0.0052
+    version 0.0052_01
 
 SYNOPSIS
         use Daemon::Daemonize qw/ :all /

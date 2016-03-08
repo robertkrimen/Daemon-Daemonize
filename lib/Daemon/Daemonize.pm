@@ -1,4 +1,8 @@
 package Daemon::Daemonize;
+BEGIN {
+  $Daemon::Daemonize::VERSION = '0.0052_01'; # patched at https://github.com/haukex/Daemon-Daemonize
+  $Daemon::Daemonize::VERSION = eval $Daemon::Daemonize::VERSION; # recommended by perlmodstyle
+}
 # ABSTRACT: An easy-to-use daemon(izing) toolkit
 
 use warnings;

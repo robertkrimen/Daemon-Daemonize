@@ -1,3 +1,6 @@
+0.0052_01 patched at https://github.com/haukex/Daemon-Daemonize
+    - Added "umask" option
+
 0.0052 Wednesday June 09 13:31:02 PDT 2010:
     - Added pgrep check to t/9-basic.t
 
